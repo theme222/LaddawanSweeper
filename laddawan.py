@@ -1,7 +1,4 @@
 import random
-from symtable import Class
-
-from asdf import check_win
 
 # Constants for difficulty levels
 LEVELS = {
@@ -25,6 +22,7 @@ class Tile:
         "<:warptsd:1286540878545948715>",  # 8
         "<:laddawan:1286535333546295409>",  # bomb 9
         ":blue_square:",  # not revealed 10
+        ":triangular_flag_on_post:" # flagged 11
     ]
 
     def __init__(self, x, y):
@@ -32,6 +30,7 @@ class Tile:
         self.y = y
         self.value = 0
         self.revealed = False
+        self.flagged = False
 
     def __repr__(self):
         return str(self.value)
@@ -39,13 +38,15 @@ class Tile:
     def get_emoji(self, show=False):
         if self.revealed or show:
             return Tile.emojis[self.value]
+        elif self.flagged:
+            return Tile.emojis[11]
         else:
             return Tile.emojis[10]
 
 
 class Game:
-    def __init__(self, x=0, y=0, bombs=0):
-        self.status = "NotStarted"  # NotStarted Playing Win Lose
+    def __init__(self, x=0, y=0, bombs=0, status="NotStarted"):
+        self.status = status  # NotStarted Playing Win Lose Uninitialized
         self.sizeX = x
         self.sizeY = y
         self.board = [[Tile(_, __) for _ in range(x)] for __ in range(y)]
@@ -75,7 +76,7 @@ class Game:
 
     # Flood fill function to reveal all nearby safe cells (0's) and their neighbors
     def flood_fill(self, row, col):
-        if row < 0 or row >= self.sizeY or col < 0 or col >= self.sizeX or self.board[row][col].revealed:
+        if row < 0 or row >= self.sizeY or col < 0 or col >= self.sizeX or self.board[row][col].revealed or self.board[row][col].flagged:
             return
 
         self.board[row][col].revealed = True
@@ -93,7 +94,7 @@ class Game:
             for tile in row:
                 if not (tile.revealed or tile.value == 9):
                     return
-        self.status = "Win"
+        self.win()
 
     # Function to check if the player hit a bomb or needs to reveal cells
     def check_cell(self, row, col):
@@ -104,6 +105,10 @@ class Game:
         self.flood_fill(row, col)
         self.check_win()
 
+    def flag(self,row,col):
+        self.board[row][col].flagged = not self.board[row][col].flagged
+        return
+
     def lose(self):
         self.status = "Lose"
         return
@@ -111,3 +116,6 @@ class Game:
     def win(self):
         self.status = "Win"
         return
+
+    def valid_move(self, row, col):
+        return (0 <= col < self.sizeX) and (0 <= row < self.sizeY)
