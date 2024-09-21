@@ -13,8 +13,8 @@ current_games = {}  # key(channel id), value(Game object)
 LEVELS = {
     'easy': {'size': 5, 'bombs': 4},
     'medium': {'size': 7, 'bombs': 9},
-    'hard': {'size': 10, 'bombs': 15},
-    'impossible': {'size': 12, 'bombs': 40}
+    'hard': {'size': 10, 'bombs': 20},
+    'impossible': {'size': 12, 'bombs': 32}
 }
 
 PREFIX = "$"
