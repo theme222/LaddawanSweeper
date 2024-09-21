@@ -11,10 +11,10 @@ import random
 current_games = {}  # key(channel id), value(Game object)
 
 LEVELS = {
-    'easy': {'size': 5, 'bombs': 4},
-    'medium': {'size': 7, 'bombs': 9},
-    'hard': {'size': 10, 'bombs': 20},
-    'impossible': {'size': 12, 'bombs': 32}
+    'easy': {'size': 5, 'bombs': 4}, # 16% bomb
+    'medium': {'size': 7, 'bombs': 9}, # 18% bomb
+    'hard': {'size': 10, 'bombs': 20}, # 20% bomb
+    'impossible': {'size': 12, 'bombs': 32} # 22% bomb
 }
 
 PREFIX = "$"
