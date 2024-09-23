@@ -1,14 +1,5 @@
 import random
 
-# Constants for difficulty levels
-LEVELS = {
-    'easy': {'size': 5, 'bombs': 3},
-    'medium': {'size': 7, 'bombs': 17},
-    'hard': {'size': 10, 'bombs': 38},
-    'impossible': {'size': 15, 'bombs': 110}
-}
-
-
 class Tile:
     emojis = [
         ":stop_button:",  # 0
@@ -22,7 +13,7 @@ class Tile:
         "<:warptsd:1286540878545948715>",  # 8
         "<:laddawan:1286535333546295409>",  # bomb 9
         ":blue_square:",  # not revealed 10
-        ":triangular_flag_on_post:" # flagged 11
+        ":triangular_flag_on_post:"  # flagged 11
     ]
 
     def __init__(self, x, y):
@@ -76,7 +67,8 @@ class Game:
 
     # Flood fill function to reveal all nearby safe cells (0's) and their neighbors
     def flood_fill(self, row, col):
-        if row < 0 or row >= self.sizeY or col < 0 or col >= self.sizeX or self.board[row][col].revealed or self.board[row][col].flagged:
+        if row < 0 or row >= self.sizeY or col < 0 or col >= self.sizeX or self.board[row][col].revealed or \
+                self.board[row][col].flagged:
             return
 
         self.board[row][col].revealed = True
@@ -105,7 +97,7 @@ class Game:
         self.flood_fill(row, col)
         self.check_win()
 
-    def flag(self,row,col):
+    def flag(self, row, col):
         self.board[row][col].flagged = not self.board[row][col].flagged
         return
 

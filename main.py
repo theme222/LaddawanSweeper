@@ -11,24 +11,13 @@ import random
 current_games = {}  # key(channel id), value(Game object)
 
 LEVELS = {
-    'easy': {'size': 5, 'bombs': 4}, # 16% bomb
-    'medium': {'size': 7, 'bombs': 9}, # 18% bomb
-    'hard': {'size': 10, 'bombs': 20}, # 20% bomb
-    'impossible': {'size': 12, 'bombs': 32} # 22% bomb
+    'easy': {'size': 5, 'bombs': 4},  # 16% bomb
+    'medium': {'size': 7, 'bombs': 9},  # 18% bomb
+    'hard': {'size': 10, 'bombs': 20},  # 20% bomb
+    'impossible': {'size': 12, 'bombs': 32}  # 22% bomb
 }
 
 PREFIX = "$"
-e_0 = ":blue_square:"
-e_1 = ":one:"
-e_2 = ":two:"
-e_3 = ":three:"
-e_4 = ":four:"
-e_5 = ":five:"
-e_6 = ":six:"
-e_7 = ":seven:"
-e_8 = "<:warptsd:1286540878545948715>"
-e_blank = ":stop_button:"
-e_bomb = "<:laddawan:1286535333546295409>"
 
 # Decode base64 twice
 TOKEN = str(DECODE(DECODE(
@@ -47,6 +36,11 @@ def get_game(ctx):
         return current_games[str(ctx.channel.id)]
     else:
         return None
+
+
+def delete_game(ctx):
+    if str(ctx.channel.id) in current_games:
+        del current_games[str(ctx.channel.id)]
 
 
 def display_board(game, show_all=False):
@@ -124,7 +118,7 @@ async def select(ctx, x: int, y: int):
     y -= 1
     x -= 1
 
-    if not current_game.valid_move(y,x):
+    if not current_game.valid_move(y, x):
         await ctx.send("Invalid position")
         return
 
@@ -137,12 +131,14 @@ async def select(ctx, x: int, y: int):
         board = display_board(current_game, show_all=True)
         for msg in board:
             if msg: await ctx.send(msg)
+        delete_game(ctx)
         await ctx.send("https://giphy.com/gifs/travisband-l-travis-fran-healy-ZDst1zdFKc5WTAr991")
         return
     if current_game.status == "Win":
         board = display_board(current_game, show_all=True)
         for msg in board:
             if msg: await ctx.send(msg)
+        delete_game(ctx)
         await ctx.send("https://giphy.com/gifs/yhw-your-happy-workplace-happiness-consultant-Qadbv0ccmSrJL9Vlwj")
         return
 
@@ -162,7 +158,7 @@ async def flag(ctx, x: int, y: int):
     y -= 1
     x -= 1
 
-    if not current_game.valid_move(y,x):
+    if not current_game.valid_move(y, x):
         await ctx.send("Invalid position")
         return
 
@@ -182,6 +178,7 @@ async def surrender(ctx):
         for msg in board:
             if msg: await ctx.send(msg)
         await ctx.send("https://giphy.com/gifs/muppets-the-muppet-show-statler-and-waldorf-kzuNhxVf27plttAS7E")
+        delete_game(ctx)
         return
     else:
         await ctx.send("No games to surrender")
@@ -205,7 +202,6 @@ async def info(ctx):
     embed.add_field(name="Help", value="Help menu", inline=True)
     embed.set_footer(text="made in satit kaset")
     await ctx.send(embed=embed)
-
 
 
 @bot.command()
