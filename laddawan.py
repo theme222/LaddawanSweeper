@@ -1,4 +1,5 @@
 import random
+from time import time
 
 class Tile:
     emojis = [
@@ -36,12 +37,14 @@ class Tile:
 
 
 class Game:
-    def __init__(self, x=0, y=0, bombs=0, status="NotStarted"):
+    def __init__(self, x=0, y=0, bombs=0, status="NotStarted",winStreak=0):
         self.status = status  # NotStarted Playing Win Lose Uninitialized
         self.sizeX = x
         self.sizeY = y
         self.board = [[Tile(_, __) for _ in range(x)] for __ in range(y)]
         self.bombCount = bombs
+        self.winStreak = winStreak
+        self.startTime = int(time())
 
     # Function to generate the minesweeper board, avoiding the first selected cell
     def first_move(self, first_row, first_col):
@@ -103,10 +106,12 @@ class Game:
 
     def lose(self):
         self.status = "Lose"
+        self.winStreak = 0
         return
 
     def win(self):
         self.status = "Win"
+        self.winStreak += 1
         return
 
     def valid_move(self, row, col):

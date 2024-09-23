@@ -4,6 +4,8 @@ import discord
 from pybase64 import standard_b64decode as DECODE
 from discord.ext import commands
 from discord import app_commands
+from time import time
+from TechnicalToolsV2 import time_convert  # this is a library I made for general purpose stuff a long time ago
 from laddawan import *
 import requests
 import random
@@ -71,13 +73,15 @@ def display_board(game, show_all=False):
 @bot.event
 async def on_message(message):
     if str(message.channel.id) in current_games and not message.author.bot:
+        ctx = await bot.get_context(message)
+        current_game = get_game(ctx)
         msg = message.content.split()
         if len(msg) == 2:
             try:
                 x = int(msg[0])
                 y = int(msg[1])
-                ctx = await bot.get_context(message)
-                await ctx.invoke(bot.get_command("select"), x, y)
+                if current_game.status not in ["Lose", "Win", "Uninitialized"]:
+                    await ctx.invoke(bot.get_command("select"), x, y)
             except ValueError:
                 pass
 
@@ -99,7 +103,10 @@ async def start(ctx, difficulty: str = ''):
 
     size = LEVELS[difficulty]['size']
     bombs = LEVELS[difficulty]['bombs']
-    current_games[str(channel_id)] = Game(size, size, bombs)
+    if str(channel_id) in current_games and current_games[str(channel_id)].status == "Win":
+        current_games[str(channel_id)] = Game(size, size, bombs, winStreak=current_games[str(channel_id)].winStreak)
+    else:
+        current_games[str(channel_id)] = Game(size, size, bombs, )
 
     board = display_board(current_games[str(channel_id)])
     for msg in board:
@@ -131,15 +138,15 @@ async def select(ctx, x: int, y: int):
         board = display_board(current_game, show_all=True)
         for msg in board:
             if msg: await ctx.send(msg)
-        delete_game(ctx)
         await ctx.send("https://giphy.com/gifs/travisband-l-travis-fran-healy-ZDst1zdFKc5WTAr991")
         return
+
     if current_game.status == "Win":
         board = display_board(current_game, show_all=True)
         for msg in board:
             if msg: await ctx.send(msg)
-        delete_game(ctx)
         await ctx.send("https://giphy.com/gifs/yhw-your-happy-workplace-happiness-consultant-Qadbv0ccmSrJL9Vlwj")
+        await ctx.send(f"Current winstreak :fire: {current_game.winStreak} :fire:\nTotal time: {time_convert(int(time())-current_game.startTime)}")
         return
 
     board = display_board(current_game)
@@ -178,10 +185,21 @@ async def surrender(ctx):
         for msg in board:
             if msg: await ctx.send(msg)
         await ctx.send("https://giphy.com/gifs/muppets-the-muppet-show-statler-and-waldorf-kzuNhxVf27plttAS7E")
-        delete_game(ctx)
         return
     else:
         await ctx.send("No games to surrender")
+
+
+@bot.command()
+async def view(ctx):
+    current_game = get_game(ctx)
+    if current_game:
+        board = display_board(current_game)
+        for msg in board:
+            if msg: await ctx.send(msg)
+        return
+    else:
+        await ctx.send("No games to view")
 
 
 @bot.command()
@@ -189,18 +207,19 @@ async def info(ctx):
     embed = discord.Embed(title="Info", description="", color=0x62a0ea)
     embed.set_author(name="Laddawan Sweeper", url="https://www.youtube.com/watch?v=iik25wqIuFo",
                      icon_url="https://cdn.discordapp.com/attachments/1281468020245663779/1286535257063030794/image.png?ex=66ef9453&is=66ee42d3&hm=c2d008690bbeee4d3331acc1ed72a17d8788d1eff758fa107b0007555ad86aaa&")
-    embed.add_field(name="Start {difficulty}",
+    embed.add_field(name="$start {difficulty}",
                     value="Start a game of Laddawan Sweeper™.\ndifficulty : easy (5x5), medium(7x7), hard(10x10), impossible(12x12) \nThese games are unique to their specific channel in which you run the command from.",
                     inline=False)
-    embed.add_field(name="Select {x} {y}",
+    embed.add_field(name="$select {x} {y}",
                     value="Select a position to check.\nx : The x position (column)\ny : The y position (row)\n( You can also type two numbers with a space in the same channel to run this command as well )",
                     inline=False)
-    embed.add_field(name="Flag {x} {y}",
+    embed.add_field(name="$flag {x} {y}",
                     value="Select a position to flag.\nx : The x position (column)\ny : The y position (row)",
                     inline=False)
-    embed.add_field(name="Surrender", value="Surrender the game", inline=True)
-    embed.add_field(name="Help", value="Help menu", inline=True)
-    embed.set_footer(text="made in satit kaset")
+    embed.add_field(name="$surrender", value="Surrender the game", inline=True)
+    embed.add_field(name="$view", value="View the current board", inline=True)
+    embed.add_field(name="$help", value="Help menu", inline=True)
+    embed.set_footer(text="made in satit kaset https://github.com/theme222/LaddawanSweeper")
     await ctx.send(embed=embed)
 
 
